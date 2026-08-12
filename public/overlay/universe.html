@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HECTRON Live Universe - Overlay 3D</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="universe-container"></div>
+    <div id="ui-overlay">
+        <div id="top-bar">
+            <div id="universe-info">
+                <span id="universe-name">HECTRON Prime</span>
+                <span id="universe-stats">🌍 0 Planetas | 👥 0 Jugadores</span>
+            </div>
+            <div id="connection-status">
+                <span id="ws-status" class="status-disconnected">▫ Desconectado</span>
+            </div>
+        </div>
+        <div id="bottom-bar">
+            <div id="chat-container">
+                <div id="chat-messages"></div>
+                <input type="text" id="chat-input" placeholder="Escribe un comando...">
+            </div>
+        </div>
+        <div id="event-notifications"></div>
+        <div id="player-panel">
+            <div id="player-name">Jugador</div>
+            <div id="player-resources">
+                <span class="resource">⚒️ <span id="resource-iron">0</span> Hierro</span>
+                <span class="resource">💰 <span id="resource-gold">0</span> Oro</span>
+                <span class="resource">💎 <span id="resource-crystal">0</span> Cristal</span>
+                <span class="resource">⚡ <span id="resource-energy">0</span> Energía</span>
+                <span class="resource">📚 <span id="resource-knowledge">0</span> Conocimiento</span>
+            </div>
+        </div>
+        <div id="help-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>📜 COMANDOS DISPONIBLES</h2>
+                <div id="commands-list"></div>
+            </div>
+        </div>
+    </div>
+    <div id="loading-screen">
+        <div class="loader">
+            <div class="hectron-logo">🌌 HECTRON</div>
+            <div class="loading-text">Cargando Universo...</div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
