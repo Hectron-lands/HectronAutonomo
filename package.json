@@ -1,9 +1,45 @@
 {
-  "name": "demo-repo",
-  "version": "0.2.0",
-  "description": "A sample package.json",
-  "dependencies": {
-    "@primer/css": "17.0.1"
+  "name": "hectron-autonomo",
+  "version": "3.2.0",
+  "description": "HECTRON - Sistema Autónomo de Streaming con Miku 3D, Gemini TTS y TikTok API",
+  "private": true,
+  "workspaces": [
+    "api",
+    "local-agent"
+  ],
+  "scripts": {
+    "install": "npm install && npm run install:agent",
+    "install:agent": "cd local-agent && npm install",
+    "dev": "concurrently "npm run dev:api" "npm run dev:agent"",
+    "dev:api": "cd api && npm run dev",
+    "dev:agent": "cd local-agent && npm run dev",
+    "build": "npm run build:api && npm run build:agent",
+    "build:api": "cd api && npm run build",
+    "build:agent": "cd local-agent && npm run build",
+    "start": "concurrently "npm run start:api" "npm run start:agent"",
+    "start:api": "cd api && npm run start",
+    "start:agent": "cd local-agent && npm run start",
+    "start:prod": "NODE_ENV=production npm run start",
+    "pc": "node scripts/start-pc.mjs",
+    "test": "echo "No tests yet""
   },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "hectron",
+    "streaming",
+    "tiktok",
+    "obs",
+    "autonomous",
+    "ai",
+    "3d",
+    "miku"
+  ],
+  "author": "Hectron-lands",
   "license": "MIT"
 }

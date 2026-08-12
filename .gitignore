@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+api/node_modules/
+local-agent/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+*.js.map
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Credentials and secrets
+*.json.key
+*.pem
+*.p12
+*_credentials.json
+service-account.json
+
+# BigQuery credentials
+GCP_CREDENTIALS_JSON
+
+# Local database
+*.db
+*.sqlite
+
+# Vercel
+.vercel/
+vercel.json
+
+# Package lock files (opcional: descomentar si no quieres versionar)
+# package-lock.json
+# api/package-lock.json
+# local-agent/package-lock.json

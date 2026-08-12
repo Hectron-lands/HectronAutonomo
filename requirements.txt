@@ -1,0 +1,35 @@
+# HECTRON AUTÓNOMO - Dependencias Python (opcional)
+# Usado para la versión Python de HECTRON-Ω
+
+# Core
+python-dotenv>=1.0.0
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Google Cloud
+google-cloud-bigquery>=3.0.0
+
+# AI/ML
+google-generativeai>=0.4.0
+
+# HTTP Client
+httpx>=0.25.0
+
+# CLI
+rich>=13.7.0
+
+# Math
+sympy>=1.12.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Async
+ aiohttp>=3.8.0
+
+# Utilities
+pydantic>=2.5.0

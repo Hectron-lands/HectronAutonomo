@@ -1,0 +1,27 @@
+{
+  "name": "hectron-local-agent",
+  "version": "3.2.0",
+  "description": "Agente local de HECTRON para control de OBS",
+  "main": "src/index.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "start:prod": "NODE_ENV=production node src/index.mjs",
+    "dev": "nodemon src/index.mjs",
+    "build": "echo 'No build required'"
+  },
+  "dependencies": {
+    "@google-cloud/bigquery": "^7.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "obs-websocket-js": "^5.0.0",
+    "ws": "^8.15.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
