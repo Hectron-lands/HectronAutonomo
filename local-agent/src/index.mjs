@@ -1,21 +1,17 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import OBSWebSocket from "obs-websocket-js";
 import { WebSocketServer } from "ws";
 import { bigqueryClient } from "./bigquery-client.mjs";
+import { call as prismCall, connect as prismConnect, disconnect as prismDisconnect, SELECTORS } from "./prism-controller.mjs";
 
 const app = express();
-// PRISM Live Studio (Games & IRL) se controla por el motor OBS WebSocket.
-// Conservamos obs-websocket-js porque PRISM expone un endpoint OBS WebSocket compatible.
-const obs = new OBSWebSocket();
+// PRISM Live Studio (Games & IRL) se controla automatizando su interfaz web
+// con Playwright (versión web de PRISM, no OBS WebSocket).
+const PRISM_URL = process.env.PRISM_URL || "https://prismlive.com";
 
 const PORT = Number(process.env.PORT || 8787);
 const TOKEN = process.env.AGENT_TOKEN || "";
-// Se acepta PRISM_* (preferido) u OBS_* (legacy) para no romper configuraciones previas.
-const OBS_HOST = process.env.PRISM_HOST || process.env.OBS_HOST || "127.0.0.1";
-const OBS_PORT = Number(process.env.PRISM_PORT || process.env.OBS_PORT || 4455);
-const OBS_PASSWORD = process.env.PRISM_PASSWORD || process.env.OBS_PASSWORD || "";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
 
 let connected = false;
@@ -63,20 +59,21 @@ function auth(req, res, next) {
   return res.status(401).json({ error: "Unauthorized agent token" });
 }
 
-// Conectar a PRISM Live Studio (vía OBS WebSocket)
+// Conectar a PRISM Live Studio (versión web, vía Playwright)
 async function connect() {
   if (connected) return true;
   try {
-    await obs.connect(`ws://${OBS_HOST}:${OBS_PORT}`, OBS_PASSWORD);
+    const ok = await prismConnect();
+    if (!ok) throw new Error(lastError || "No se pudo abrir PRISM Live Studio en el navegador");
     connected = true;
     lastError = null;
-    console.log("✅ PRISM Live Studio conectado (OBS WebSocket)");
+    console.log("✅ PRISM Live Studio conectado (versión web vía Playwright)");
     
     // Guardar evento en BigQuery
     await bigqueryClient.saveAutonomousDecision({
       type: 'obs-connection',
-      value: { status: 'connected', host: OBS_HOST, port: OBS_PORT },
-      context: 'Conexión inicial a PRISM Live Studio (OBS WebSocket)',
+      value: { status: 'connected', url: PRISM_URL },
+      context: 'Conexión inicial a PRISM Live Studio (versión web vía Playwright)',
       confidence: 1.0,
       success: true,
     });
@@ -91,7 +88,7 @@ async function connect() {
     await bigqueryClient.saveAutonomousDecision({
       type: 'obs-connection',
       value: { status: 'failed', error: lastError },
-      context: 'Error de conexión a PRISM Live Studio (OBS WebSocket)',
+      context: 'Error de conexión a PRISM Live Studio (versión web vía Playwright)',
       confidence: 0.0,
       success: false,
     });
@@ -100,12 +97,12 @@ async function connect() {
   }
 }
 
-// Llamar a PRISM Live Studio
+// Llamar a PRISM Live Studio (delegado al controlador Playwright)
 async function call(requestType, requestData = {}) {
   if (!(await connect())) {
     throw new Error(lastError || "PRISM Live Studio no está conectado");
   }
-  return obs.call(requestType, requestData);
+  return prismCall(requestType, requestData);
 }
 
 // Snapshot de estado
@@ -374,34 +371,30 @@ setInterval(() => {
   connect().catch(() => {});
 }, 5000);
 
-// Manejar cierre de PRISM Live Studio
-obs.on("ConnectionClosed", () => {
-  connected = false;
-  console.log("⚠️ PRISM Live Studio desconectado; reintentando...");
-  
-  // Guardar en BigQuery
-  bigqueryClient.saveAutonomousDecision({
-    type: 'obs-disconnection',
-    value: {},
-    context: 'Desconexión no planeada de PRISM Live Studio (OBS WebSocket)',
-    confidence: 0.0,
-    success: false,
-  }).catch(() => {});
+// Manejar cierre de PRISM Live Studio: al no haber eventos de obs-websocket-js,
+// se comprueba periódicamente si el navegador/page sigue activo.
+setInterval(async () => {
+  if (connected) {
+    // El controlador reintenta la conexión internamente; si falla, marcamos desconectado.
+    const ok = await connect().catch(() => false);
+    if (!ok) {
+      console.log("⚠️ PRISM Live Studio desconectado; reintentando...");
+      bigqueryClient.saveAutonomousDecision({
+        type: 'obs-disconnection',
+        value: {},
+        context: 'Desconexión no planeada de PRISM Live Studio (versión web)',
+        confidence: 0.0,
+        success: false,
+      }).catch(() => {});
+    }
+  }
+}, 15000);
+
+// Cierre limpio: cerrar el navegador de Playwright al detener el agente.
+process.on("SIGINT", async () => {
+  console.log("⏹ Cerrando PRISM Live Studio y agente local...");
+  await prismDisconnect().catch(() => {});
+  process.exit(0);
 });
 
-obs.on("ConnectionError", (e) => {
-  connected = false;
-  lastError = e?.message || String(e);
-  console.error("❌ Error en PRISM Live Studio (OBS WebSocket):", lastError);
-  
-  // Guardar en BigQuery
-  bigqueryClient.saveAutonomousDecision({
-    type: 'obs-error',
-    value: { error: lastError },
-    context: 'Error en conexión de PRISM Live Studio (OBS WebSocket)',
-    confidence: 0.0,
-    success: false,
-  }).catch(() => {});
-});
-
-export { app, obs, call, snapshot };
+export { app, call, snapshot, prismCall };
