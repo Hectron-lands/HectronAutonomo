@@ -5,7 +5,7 @@ Escucha comentarios y regalos en tiempo real y los procesa con el cerebro,
 la memoria, la voz y el cuerpo 3D.
 """
 import asyncio
-from . import config, memoria, cerebro, voz, cuerpo, tentaculos, conocimiento
+from . import config, memoria, cerebro, voz, cuerpo, tentaculos, conocimiento, vision
 
 # Estado para no colapsar si 100 personas hablan a la vez
 _thinking = False
@@ -66,6 +66,23 @@ async def _procesar_conocimiento(username: str, tipo: str, tema: str):
     cuerpo.neutral()
 
 
+async def _procesar_vision(username: str):
+    """El Leviatán analiza su propia pantalla con Gemini Vision."""
+    print(f"👁️ [VISIÓN] {username} pide que el Leviatán mire la pantalla")
+    try:
+        texto, emocion = await vision.analizar_pantalla_async("El Leviatán observa su stream.")
+    except Exception as e:
+        print(f"⚠️ No se pudo analizar pantalla: {e}")
+        texto = "Mis ojos no alcanzan lo que tú ves... por ahora."
+        emocion = "Neutral"
+
+    print(f"🔮 [LEVIATÁN] ({emocion}): {texto}")
+    cuerpo.cambiar_expresion(emocion)
+    tentaculos.notificar_emocion(emocion)
+    voz.hablar(texto)
+    cuerpo.neutral()
+
+
 def iniciar():
     """Conecta al Live de TikTok y empieza a escuchar."""
     try:
@@ -113,6 +130,17 @@ def iniciar():
             try:
                 await _procesar_conocimiento(username, "noticia", "")
                 await asyncio.sleep(8)
+            finally:
+                _thinking = False
+            return
+
+        if mensaje.lower().strip() == "/ver":
+            _thinking = True
+            try:
+                await _procesar_vision(username)
+                await asyncio.sleep(8)
+            except Exception as e:
+                print(f"⚠️ Error de visión: {e}")
             finally:
                 _thinking = False
             return

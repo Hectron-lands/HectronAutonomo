@@ -350,6 +350,15 @@ function handleWebSocketMessage(message) {
             break;
         case 'chat-message': case 'command-executed':
             addChatMessage(message);
+            // Procesar comandos de mini-juegos
+            if (window.Minijuegos && message.text) {
+                Minijuegos.procesarComando(message.text, message.sender || message.playerName || 'mortal');
+            }
+            break;
+        case 'gift': case 'donation':
+            if (window.EfectosDonacion && message.gift) {
+                EfectosDonacion.disparar(message.gift, message.count || 1, message.sender || 'mortal');
+            }
             break;
         case 'epic-event':
             showNotification(message.text || '✨ Evento épico');
@@ -500,6 +509,8 @@ function initChatInput() {
             const command = input.value.trim();
             if (state.ws && state.ws.readyState === WebSocket.OPEN)
                 state.ws.send(JSON.stringify({ type: 'chat-message', message: command, playerId: state.user.playerId, playerName: state.user.playerName }));
+            // Procesar mini-juegos localmente
+            if (window.Minijuegos) Minijuegos.procesarComando(command, state.user.playerName);
             addChatMessage({ sender: state.user.playerName, text: command, type: 'command' });
             input.value = '';
         }
