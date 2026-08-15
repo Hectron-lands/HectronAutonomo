@@ -12,3 +12,5 @@ pygame>=2.5.0
 
 # Cargar .env
 python-dotenv>=1.0.0
+# Visión: capturar pantalla para Gemini Vision
+mss>=9.0.0
