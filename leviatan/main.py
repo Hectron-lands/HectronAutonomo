@@ -41,6 +41,7 @@ def main():
     print("  🗣️ Voz:      ElevenLabs")
     print("  🎭 Cuerpo:   VSeeFace vía OSC")
     print("  💾 Memoria:  SQLite local")
+    print("  🎨 Tentáculo: PRISM vía agente Node.js")
     print("=" * 60)
     print()
 

@@ -33,6 +33,13 @@ OSC_PORT = int(os.getenv("OSC_PORT", "39000"))
 # ─── MEMORIA (SQLite) ────────────────────────────────────────────────────────
 DB_PATH = os.getenv("DB_PATH", str(BASE_DIR / "data" / "memoria_leviatan.db"))
 
+# ─── AGENTE LOCAL (Node.js) ──────────────────────────────────────────────────
+# El agente local controla PRISM Live Studio. El Leviatán le envía la emoción
+# para que PRISM cambie de escena automáticamente.
+# URL del agente (por defecto http://localhost:8787). Vacío = desactivado.
+AGENT_URL = os.getenv("AGENT_URL", "http://localhost:8787")
+AGENT_TOKEN = os.getenv("AGENT_TOKEN", "")
+
 # ─── AUDIO ──────────────────────────────────────────────────────────────────
 # Si True, reproduce el audio por los altavoces (PRISM/VSeeFace lo capturará).
 REPRODUCIR_AUDIO = os.getenv("REPRODUCIR_AUDIO", "true").lower() == "true"

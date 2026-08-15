@@ -5,7 +5,7 @@ Escucha comentarios y regalos en tiempo real y los procesa con el cerebro,
 la memoria, la voz y el cuerpo 3D.
 """
 import asyncio
-from . import config, memoria, cerebro, voz, cuerpo
+from . import config, memoria, cerebro, voz, cuerpo, tentaculos
 
 # Estado para no colapsar si 100 personas hablan a la vez
 _thinking = False
@@ -27,6 +27,7 @@ async def _procesar_comentario(username: str, mensaje: str):
     print(f"🔮 [LEVIATÁN] ({emocion}): {texto}")
 
     cuerpo.cambiar_expresion(emocion)
+    tentaculos.notificar_emocion(emocion)
     voz.hablar(texto)
     cuerpo.neutral()
 
@@ -39,6 +40,7 @@ async def _procesar_regalo(username: str, nombre_regalo: str, cantidad: int):
     texto, emocion = await cerebro.agradecer_regalo_async(username, nombre_regalo, cantidad)
 
     cuerpo.cambiar_expresion("Joy")
+    tentaculos.notificar_emocion("Joy")
     voz.hablar(texto)
     cuerpo.neutral()
 
