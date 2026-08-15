@@ -7,8 +7,8 @@ import { call as prismCall, connect as prismConnect, disconnect as prismDisconne
 
 const app = express();
 // PRISM Live Studio (Games & IRL) se controla automatizando su interfaz web
-// con Playwright (versión web de PRISM, no OBS WebSocket).
-const PRISM_URL = process.env.PRISM_URL || "https://prismlive.com";
+// automatizando su app de escritorio Qt con pywinauto (no OBS WebSocket).
+const PRISM_WINDOW_TITLE = process.env.PRISM_WINDOW_TITLE || "PRISM Live Studio";
 
 const PORT = Number(process.env.PORT || 8787);
 const TOKEN = process.env.AGENT_TOKEN || "";
@@ -59,7 +59,7 @@ function auth(req, res, next) {
   return res.status(401).json({ error: "Unauthorized agent token" });
 }
 
-// Conectar a PRISM Live Studio (versión web, vía Playwright)
+// Conectar a PRISM Live Studio (app de escritorio Qt, vía pywinauto)
 async function connect() {
   if (connected) return true;
   try {
@@ -67,13 +67,13 @@ async function connect() {
     if (!ok) throw new Error(lastError || "No se pudo abrir PRISM Live Studio en el navegador");
     connected = true;
     lastError = null;
-    console.log("✅ PRISM Live Studio conectado (versión web vía Playwright)");
+    console.log("✅ PRISM Live Studio conectado (app de escritorio vía pywinauto)");
     
     // Guardar evento en BigQuery
     await bigqueryClient.saveAutonomousDecision({
       type: 'obs-connection',
-      value: { status: 'connected', url: PRISM_URL },
-      context: 'Conexión inicial a PRISM Live Studio (versión web vía Playwright)',
+      value: { status: 'connected', windowTitle: PRISM_WINDOW_TITLE },
+      context: 'Conexión inicial a PRISM Live Studio (app de escritorio vía pywinauto)',
       confidence: 1.0,
       success: true,
     });
@@ -88,7 +88,7 @@ async function connect() {
     await bigqueryClient.saveAutonomousDecision({
       type: 'obs-connection',
       value: { status: 'failed', error: lastError },
-      context: 'Error de conexión a PRISM Live Studio (versión web vía Playwright)',
+      context: 'Error de conexión a PRISM Live Studio (app de escritorio vía pywinauto)',
       confidence: 0.0,
       success: false,
     });
@@ -97,7 +97,7 @@ async function connect() {
   }
 }
 
-// Llamar a PRISM Live Studio (delegado al controlador Playwright)
+// Llamar a PRISM Live Studio (delegado al controlador de escritorio)
 async function call(requestType, requestData = {}) {
   if (!(await connect())) {
     throw new Error(lastError || "PRISM Live Studio no está conectado");
@@ -382,7 +382,7 @@ setInterval(async () => {
       bigqueryClient.saveAutonomousDecision({
         type: 'obs-disconnection',
         value: {},
-        context: 'Desconexión no planeada de PRISM Live Studio (versión web)',
+        context: 'Desconexión no planeada de PRISM Live Studio (app de escritorio)',
         confidence: 0.0,
         success: false,
       }).catch(() => {});
@@ -390,7 +390,7 @@ setInterval(async () => {
   }
 }, 15000);
 
-// Cierre limpio: cerrar el navegador de Playwright al detener el agente.
+// Cierre limpio: desconectar el controlador de escritorio al detener el agente.
 process.on("SIGINT", async () => {
   console.log("⏹ Cerrando PRISM Live Studio y agente local...");
   await prismDisconnect().catch(() => {});

@@ -33,3 +33,6 @@ sqlalchemy>=2.0.0
 
 # Utilities
 pydantic>=2.5.0
+
+# Automatización de escritorio de PRISM Live Studio (bridge del local-agent)
+pywinauto>=0.6.8

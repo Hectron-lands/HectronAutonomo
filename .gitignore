@@ -60,4 +60,4 @@ vercel.json
 # Package lock files (opcional: descomentar si no quieres versionar)
 # package-lock.json
 # api/package-lock.json
-# local-agent/package-lock.json
+# local-agent/package-lock.json__pycache__/

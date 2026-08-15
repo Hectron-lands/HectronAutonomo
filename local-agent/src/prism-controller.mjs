@@ -1,63 +1,76 @@
-// Controlador de PRISM Live Studio (Games & IRL) vía automatización del navegador.
+// Controlador de PRISM Live Studio (Games & IRL) vía automatización de escritorio.
 //
-// PRISM en su versión web no expone un OBS WebSocket accesible desde un script,
-// por lo que este módulo reemplaza obs-websocket-js automatizando la interfaz
-// de PRISM abierta en un navegador real mediante Playwright.
+// PRISM Live Studio Desktop es una aplicación Qt (C++) nativa, NO una web app,
+// por lo que no se puede controlar con Playwright/selectores DOM. Este módulo
+// automatiza la ventana de escritorio de PRISM usando pywinauto (Python), que
+// accede a los widgets Qt por su objectName / automation ID reales.
 //
-// Expone la misma función call(requestType, requestData) que usaba el agente con
-// obs-websocket-js, de modo que los endpoints y brain-client.mjs no cambian.
+// Los objectName se extrajeron del código fuente público de PRISM
+// (github.com/naver/prism-live-studio):
+//   - Botón Go Live / Finish Live: QPushButton "GoLiveShift"
+//   - Botón Grabar: QPushButton "Record"
+//   - Dock de escenas: PLSDock "scenesDock"
+//   - Lista de escenas: PLSSceneListView
+//   - Etiqueta de nombre de escena: QLabel "nameLabel" / "label"
 //
-// Selectores: PRISM no publica una API estable de selectores, así que se usan
-// selectores heurísticos (texto visible y roles ARIA) centralizados en
-// SELECTORS para poder ajustarlos sin tocar la lógica.
+// Expone la misma función call(requestType, requestData) que usaba obs-websocket-js,
+// de modo que los endpoints y brain-client.mjs no cambian.
 
-import { chromium } from "playwright";
+import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+import path from "path";
 
-const PRISM_URL = process.env.PRISM_URL || "https://prismlive.com";
-const PRISM_PROFILE = process.env.PRISM_PROFILE || "";
-const PRISM_HEADLESS = process.env.PRISM_HEADLESS === "true";
-const PRISM_NAV_TIMEOUT = Number(process.env.PRISM_NAV_TIMEOUT || 60000);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Selectores heurísticos de la UI de PRISM. Ajustar si cambia la interfaz.
-const SELECTORS = {
-  sceneList: '[data-testid="scene-list"], .scene-list, [class*="SceneList"]',
-  sceneItem: '[data-testid="scene-item"], .scene-item, [class*="SceneItem"]',
-  sceneItemByName: (name) =>
-    `[data-testid="scene-item"][data-name="${name}"], .scene-item:has-text("${name}"), [class*="SceneItem"]:has-text("${name}")`,
-  startStream: '[data-testid="start-stream"], button:has-text("Start Streaming"), button:has-text("Go Live"), [class*="StartStream"]',
-  stopStream: '[data-testid="stop-stream"], button:has-text("Stop Streaming"), button:has-text("End Stream"), [class*="StopStream"]',
-  currentScene: '[data-testid="current-scene"], .current-scene, [class*="CurrentScene"]',
-  streamActiveIndicator: '[data-testid="stream-active"], .stream-active, [class*="StreamActive"]',
-};
+const PRISM_WINDOW_TITLE = process.env.PRISM_WINDOW_TITLE || "PRISM Live Studio";
+const PRISM_PYTHON = process.env.PRISM_PYTHON || "python";
+const PRISM_LAUNCH_CMD = process.env.PRISM_LAUNCH_CMD || "";
+const PRISM_LAUNCH_TIMEOUT = Number(process.env.PRISM_LAUNCH_TIMEOUT || 30000);
 
-let browser = null;
-let context = null;
-let page = null;
 let connected = false;
 let lastError = null;
 
-async function launch() {
-  if (browser) return;
-  const launchOptions = { headless: PRISM_HEADLESS };
-  if (PRISM_PROFILE) {
-    launchOptions.userDataDir = PRISM_PROFILE;
-  }
-  browser = await chromium.launchPersistentContext(PRISM_PROFILE || "", {
-    headless: PRISM_HEADLESS,
+// Ejecuta el helper Python de pywinauto y devuelve su salida JSON.
+function runPythonHelper(action, payload = {}) {
+  return new Promise((resolve, reject) => {
+    const helperPath = path.join(__dirname, "prism-desktop-bridge.py");
+    const args = [helperPath, action, JSON.stringify(payload)];
+    const proc = spawn(PRISM_PYTHON, args, { windowsHide: true });
+    let stdout = "";
+    let stderr = "";
+    proc.stdout.on("data", (d) => (stdout += d.toString()));
+    proc.stderr.on("data", (d) => (stderr += d.toString()));
+    proc.on("error", (e) => reject(new Error(`No se pudo ejecutar python: ${e.message}`)));
+    proc.on("close", (code) => {
+      if (code !== 0) {
+        return reject(new Error(stderr.trim() || `prism-desktop-bridge.py salió con código ${code}`));
+      }
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (e) {
+        reject(new Error(`Respuesta no JSON del bridge Python: ${stdout.slice(0, 200)}`));
+      }
+    });
   });
-  context = browser;
-  page = context.pages()[0] || (await context.newPage());
-  page.setDefaultTimeout(PRISM_NAV_TIMEOUT);
+}
+
+async function launchPrism() {
+  if (!PRISM_LAUNCH_CMD) return true;
+  return new Promise((resolve) => {
+    const proc = spawn(PRISM_LAUNCH_CMD, { shell: true, windowsHide: false, detached: true });
+    proc.on("error", () => resolve(false));
+    // No esperamos a que termine; solo damos tiempo a que la ventana aparezca.
+    setTimeout(() => resolve(true), Math.min(PRISM_LAUNCH_TIMEOUT, 5000));
+  });
 }
 
 async function connect() {
-  if (connected && page && !page.isClosed()) return true;
+  if (connected) return true;
   try {
-    await launch();
-    const currentUrl = page.url();
-    if (!currentUrl || currentUrl === "about:blank") {
-      await page.goto(PRISM_URL, { waitUntil: "domcontentloaded" });
-    }
+    await launchPrism();
+    // Comprobar que la ventana de PRISM está accesible vía pywinauto.
+    const res = await runPythonHelper("ping", { windowTitle: PRISM_WINDOW_TITLE });
+    if (!res.ok) throw new Error(res.error || "Ventana de PRISM no encontrada");
     connected = true;
     lastError = null;
     return true;
@@ -68,68 +81,40 @@ async function connect() {
   }
 }
 
-// Lista de escenas leyendo el dock de escenas de PRISM.
 async function getSceneList() {
-  const locator = page.locator(SELECTORS.sceneItem);
-  const count = await locator.count();
-  const scenes = [];
-  for (let i = 0; i < count; i++) {
-    const text = (await locator.nth(i).innerText())?.trim();
-    if (text) scenes.push(text);
-  }
-  return scenes;
+  const res = await runPythonHelper("get_scenes", { windowTitle: PRISM_WINDOW_TITLE });
+  return res.scenes || [];
 }
 
 async function getCurrentProgramScene() {
-  try {
-    const el = page.locator(SELECTORS.currentScene).first();
-    const name = (await el.innerText())?.trim();
-    return { currentProgramSceneName: name || "—" };
-  } catch {
-    return { currentProgramSceneName: "—" };
-  }
+  const res = await runPythonHelper("get_current_scene", { windowTitle: PRISM_WINDOW_TITLE });
+  return { currentProgramSceneName: res.scene || "—" };
 }
 
 async function setCurrentProgramScene({ sceneName }) {
-  const sel = SELECTORS.sceneItemByName(sceneName);
-  const item = page.locator(sel).first();
-  await item.waitFor({ state: "visible", timeout: PRISM_NAV_TIMEOUT });
-  await item.click();
+  await runPythonHelper("set_scene", { windowTitle: PRISM_WINDOW_TITLE, sceneName });
   return { ok: true };
 }
 
 async function getStreamStatus() {
-  try {
-    const indicator = page.locator(SELECTORS.streamActiveIndicator).first();
-    const visible = await indicator.isVisible().catch(() => false);
-    const stopBtn = page.locator(SELECTORS.stopStream).first();
-    const stopVisible = await stopBtn.isVisible().catch(() => false);
-    const active = visible || stopVisible;
-    return { outputActive: active, outputState: active ? "active" : "stopped" };
-  } catch {
-    return { outputActive: false, outputState: "unknown" };
-  }
+  const res = await runPythonHelper("get_stream_status", { windowTitle: PRISM_WINDOW_TITLE });
+  return { outputActive: Boolean(res.active), outputState: res.active ? "active" : "stopped" };
 }
 
 async function startStream() {
-  const btn = page.locator(SELECTORS.startStream).first();
-  await btn.waitFor({ state: "visible", timeout: PRISM_NAV_TIMEOUT });
-  await btn.click();
+  await runPythonHelper("go_live", { windowTitle: PRISM_WINDOW_TITLE });
   return { ok: true };
 }
 
 async function stopStream() {
-  const btn = page.locator(SELECTORS.stopStream).first();
-  await btn.waitFor({ state: "visible", timeout: PRISM_NAV_TIMEOUT });
-  await btn.click();
+  await runPythonHelper("finish_live", { windowTitle: PRISM_WINDOW_TITLE });
   return { ok: true };
 }
 
-// Emula la versión que devolvía obs-websocket-js para no romper /status.
 function getVersion() {
   return {
-    obsVersion: "PRISM Live Studio (web)",
-    obsWebSocketVersion: "playwright-automation",
+    obsVersion: "PRISM Live Studio (desktop, Qt)",
+    obsWebSocketVersion: "pywinauto-desktop-bridge",
   };
 }
 
@@ -160,14 +145,6 @@ async function call(requestType, requestData = {}) {
 
 async function disconnect() {
   connected = false;
-  try {
-    if (context) await context.close();
-  } catch {
-    /* ignore */
-  }
-  browser = null;
-  context = null;
-  page = null;
 }
 
-export { call, connect, disconnect, SELECTORS };
+export { call, connect, disconnect };
