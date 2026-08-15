@@ -149,7 +149,7 @@ async function generateAutonomousAction(currentScene) {
   const prompt = `Eres HECTRON, un sistema autónomo de streaming con Miku 3D para TikTok LIVE.
   
   CONTEXTO ACTUAL:
-  - Escena actual de OBS: ${currentScene}
+  - Escena actual de PRISM Live Studio: ${currentScene}
   - Escenas disponibles para autonomía: ${autonomousScenes.join(', ')}
   - El stream está ACTIVO
   - No ha habido interacción humana en los últimos minutos

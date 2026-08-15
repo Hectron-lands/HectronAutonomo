@@ -1,7 +1,7 @@
 {
   "name": "hectron-local-agent",
   "version": "3.2.0",
-  "description": "Agente local de HECTRON para control de OBS",
+  "description": "Agente local de HECTRON para control de PRISM Live Studio (Games & IRL)",
   "main": "src/index.mjs",
   "type": "module",
   "scripts": {

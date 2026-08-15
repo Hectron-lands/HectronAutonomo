@@ -6,13 +6,16 @@ import { WebSocketServer } from "ws";
 import { bigqueryClient } from "./bigquery-client.mjs";
 
 const app = express();
+// PRISM Live Studio (Games & IRL) se controla por el motor OBS WebSocket.
+// Conservamos obs-websocket-js porque PRISM expone un endpoint OBS WebSocket compatible.
 const obs = new OBSWebSocket();
 
 const PORT = Number(process.env.PORT || 8787);
 const TOKEN = process.env.AGENT_TOKEN || "";
-const OBS_HOST = process.env.OBS_HOST || "127.0.0.1";
-const OBS_PORT = Number(process.env.OBS_PORT || 4455);
-const OBS_PASSWORD = process.env.OBS_PASSWORD || "";
+// Se acepta PRISM_* (preferido) u OBS_* (legacy) para no romper configuraciones previas.
+const OBS_HOST = process.env.PRISM_HOST || process.env.OBS_HOST || "127.0.0.1";
+const OBS_PORT = Number(process.env.PRISM_PORT || process.env.OBS_PORT || 4455);
+const OBS_PASSWORD = process.env.PRISM_PASSWORD || process.env.OBS_PASSWORD || "";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
 
 let connected = false;
@@ -60,20 +63,20 @@ function auth(req, res, next) {
   return res.status(401).json({ error: "Unauthorized agent token" });
 }
 
-// Conectar a OBS
+// Conectar a PRISM Live Studio (vía OBS WebSocket)
 async function connect() {
   if (connected) return true;
   try {
     await obs.connect(`ws://${OBS_HOST}:${OBS_PORT}`, OBS_PASSWORD);
     connected = true;
     lastError = null;
-    console.log("✅ OBS WebSocket conectado");
+    console.log("✅ PRISM Live Studio conectado (OBS WebSocket)");
     
     // Guardar evento en BigQuery
     await bigqueryClient.saveAutonomousDecision({
       type: 'obs-connection',
       value: { status: 'connected', host: OBS_HOST, port: OBS_PORT },
-      context: 'Conexión inicial a OBS WebSocket',
+      context: 'Conexión inicial a PRISM Live Studio (OBS WebSocket)',
       confidence: 1.0,
       success: true,
     });
@@ -82,13 +85,13 @@ async function connect() {
   } catch (e) {
     connected = false;
     lastError = e?.message || String(e);
-    console.error("❌ Error al conectar con OBS:", lastError);
+    console.error("❌ Error al conectar con PRISM Live Studio:", lastError);
     
     // Guardar error en BigQuery
     await bigqueryClient.saveAutonomousDecision({
       type: 'obs-connection',
       value: { status: 'failed', error: lastError },
-      context: 'Error de conexión a OBS WebSocket',
+      context: 'Error de conexión a PRISM Live Studio (OBS WebSocket)',
       confidence: 0.0,
       success: false,
     });
@@ -97,10 +100,10 @@ async function connect() {
   }
 }
 
-// Llamar a OBS
+// Llamar a PRISM Live Studio
 async function call(requestType, requestData = {}) {
   if (!(await connect())) {
-    throw new Error(lastError || "OBS no está conectado");
+    throw new Error(lastError || "PRISM Live Studio no está conectado");
   }
   return obs.call(requestType, requestData);
 }
@@ -143,7 +146,8 @@ async function snapshot() {
 
 // Endpoints
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "hectron-local-agent", obsConnected: connected });
+  // prismConnected es el nombre preferido; obsConnected se mantiene por retrocompatibilidad.
+  res.json({ ok: true, service: "hectron-local-agent", prismConnected: connected, obsConnected: connected });
 });
 
 app.get("/status", auth, async (_req, res) => {
@@ -170,7 +174,7 @@ app.get("/scenes", auth, async (_req, res) => {
     await bigqueryClient.saveAutonomousDecision({
       type: 'scenes-list',
       value: scenes,
-      context: 'Lista de escenas obtenida de OBS',
+      context: 'Lista de escenas obtenida de PRISM Live Studio',
       confidence: 1.0,
       success: true,
     });
@@ -370,16 +374,16 @@ setInterval(() => {
   connect().catch(() => {});
 }, 5000);
 
-// Manejar cierre de OBS
+// Manejar cierre de PRISM Live Studio
 obs.on("ConnectionClosed", () => {
   connected = false;
-  console.log("⚠️ OBS WebSocket desconectado; reintentando...");
+  console.log("⚠️ PRISM Live Studio desconectado; reintentando...");
   
   // Guardar en BigQuery
   bigqueryClient.saveAutonomousDecision({
     type: 'obs-disconnection',
     value: {},
-    context: 'Desconexión no planeada de OBS WebSocket',
+    context: 'Desconexión no planeada de PRISM Live Studio (OBS WebSocket)',
     confidence: 0.0,
     success: false,
   }).catch(() => {});
@@ -388,13 +392,13 @@ obs.on("ConnectionClosed", () => {
 obs.on("ConnectionError", (e) => {
   connected = false;
   lastError = e?.message || String(e);
-  console.error("❌ Error en OBS WebSocket:", lastError);
+  console.error("❌ Error en PRISM Live Studio (OBS WebSocket):", lastError);
   
   // Guardar en BigQuery
   bigqueryClient.saveAutonomousDecision({
     type: 'obs-error',
     value: { error: lastError },
-    context: 'Error en conexión OBS WebSocket',
+    context: 'Error en conexión de PRISM Live Studio (OBS WebSocket)',
     confidence: 0.0,
     success: false,
   }).catch(() => {});

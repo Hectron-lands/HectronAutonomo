@@ -23,7 +23,7 @@ npm run dev
 
 ## Estructura
 - api/ - API Principal (Express)
-- local-agent/ - Agente Local (OBS)
+- local-agent/ - Agente Local (PRISM Live Studio)
 - public/overlay/ - Overlay 3D
 - scripts/ - Scripts utilidad
 - .github/workflows/ - CI/CD

@@ -95,7 +95,7 @@ brainWss.on('connection', (ws) => {
         case 'scene-change':
           // Cambiar escena
           console.log('🎭 Cambio de escena:', message.scene);
-          // Enviar a OBS
+          // Enviar a PRISM Live Studio
           break;
         case 'autonomous-action':
           // Acción autónoma desde el cerebro
