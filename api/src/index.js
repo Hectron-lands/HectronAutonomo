@@ -128,9 +128,11 @@ brainWss.on('connection', (ws) => {
 const overlayDir = path.resolve(__dirname, '../../public/overlay');
 app.use('/overlay', express.static(overlayDir));
 const studioDir = path.resolve(__dirname, '../../public/studio');
+const landingDir = path.resolve(__dirname, '../../public/landing');
 app.use('/studio', express.static(studioDir));
+app.use('/landing', express.static(landingDir));
 app.get('/', (_req, res) => {
-  res.redirect('/studio/index.html');
+  res.redirect('/landing/index.html');
 });
 
 // Iniciar servidor
