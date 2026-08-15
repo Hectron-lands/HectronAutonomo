@@ -13,6 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 // Importar módulos
 import { autonomyApp, autonomyWss } from './autonomy-server.js';
 import metricsRouter from './routes/metrics.js';
+import studioRouter from './routes/studio.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,6 +47,7 @@ app.get('/health', (req, res) => {
 
 // Rutas de métricas
 app.use('/api/metrics', metricsRouter);
+app.use('/api/studio', studioRouter);
 
 // Rutas de autonomía
 app.use('/api/autonomy', autonomyApp);
@@ -125,8 +127,10 @@ brainWss.on('connection', (ws) => {
 // El overlay queda en http://localhost:PORT/overlay/universe.html
 const overlayDir = path.resolve(__dirname, '../../public/overlay');
 app.use('/overlay', express.static(overlayDir));
+const studioDir = path.resolve(__dirname, '../../public/studio');
+app.use('/studio', express.static(studioDir));
 app.get('/', (_req, res) => {
-  res.redirect('/overlay/universe.html');
+  res.redirect('/studio/index.html');
 });
 
 // Iniciar servidor
