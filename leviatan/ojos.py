@@ -5,7 +5,7 @@ Escucha comentarios y regalos en tiempo real y los procesa con el cerebro,
 la memoria, la voz y el cuerpo 3D.
 """
 import asyncio
-from . import config, memoria, cerebro, voz, cuerpo, tentaculos
+from . import config, memoria, cerebro, voz, cuerpo, tentaculos, conocimiento
 
 # Estado para no colapsar si 100 personas hablan a la vez
 _thinking = False
@@ -45,6 +45,27 @@ async def _procesar_regalo(username: str, nombre_regalo: str, cantidad: int):
     cuerpo.neutral()
 
 
+async def _procesar_conocimiento(username: str, tipo: str, tema: str):
+    """Procesa comandos de conocimiento real del mundo."""
+    print(f"📚 [CONOCIMIENTO] {username} pide {tipo}: {tema}")
+
+    if tipo == "saber":
+        texto, emocion = await conocimiento.saber_async(tema, username)
+    elif tipo == "historia":
+        texto, emocion = await conocimiento.historia_async(tema, username)
+    elif tipo == "noticia":
+        texto, emocion = await conocimiento.noticia_async(username)
+    else:
+        return
+
+    print(f"🔮 [LEVIATÁN] ({emocion}): {texto}")
+
+    cuerpo.cambiar_expresion(emocion)
+    tentaculos.notificar_emocion(emocion)
+    voz.hablar(texto)
+    cuerpo.neutral()
+
+
 def iniciar():
     """Conecta al Live de TikTok y empieza a escuchar."""
     try:
@@ -61,14 +82,48 @@ def iniciar():
         global _thinking
         if _thinking:
             return
-        # Solo activamos al Leviatán si hay una pregunta (?) o mención directa
         mensaje = event.comment
+        username = event.user.nickname
+
+        # Comandos de conocimiento real
+        if mensaje.lower().startswith("/saber "):
+            tema = mensaje[7:].strip()
+            if tema:
+                _thinking = True
+                try:
+                    await _procesar_conocimiento(username, "saber", tema)
+                    await asyncio.sleep(8)
+                finally:
+                    _thinking = False
+                return
+
+        if mensaje.lower().startswith("/historia "):
+            tema = mensaje[10:].strip()
+            if tema:
+                _thinking = True
+                try:
+                    await _procesar_conocimiento(username, "historia", tema)
+                    await asyncio.sleep(8)
+                finally:
+                    _thinking = False
+                return
+
+        if mensaje.lower().strip() == "/noticia":
+            _thinking = True
+            try:
+                await _procesar_conocimiento(username, "noticia", "")
+                await asyncio.sleep(8)
+            finally:
+                _thinking = False
+            return
+
+        # Activación normal: pregunta (?) o mención
         if "?" not in mensaje and "@" not in mensaje:
             return
         _thinking = True
         try:
-            await _procesar_comentario(event.user.nickname, mensaje)
-            await asyncio.sleep(6)  # tiempo de habla en stream
+            await _procesar_comentario(username, mensaje)
+            await asyncio.sleep(6)
         finally:
             _thinking = False
 
