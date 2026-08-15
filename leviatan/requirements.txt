@@ -1,0 +1,14 @@
+# Dependencias del Leviatán (sistema de streaming autónomo con Gemini)
+# Instala: pip install -r leviatan/requirements.txt
+
+# Chat de TikTok en tiempo real
+TikTokLive>=6.0.0
+
+# Cuerpo 3D: OSC a VSeeFace
+python-osc>=1.8.0
+
+# Reproducción de audio (voz de ElevenLabs)
+pygame>=2.5.0
+
+# Cargar .env
+python-dotenv>=1.0.0
