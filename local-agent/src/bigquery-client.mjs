@@ -126,7 +126,7 @@ class BigQueryClient {
           AVG(confidence) as avg_confidence,
           SUM(CASE WHEN success THEN 1 ELSE 0 END) as successful_actions,
           AVG(execution_time_ms) as avg_execution_time
-        FROM `${this.datasetId}.autonomous_decisions`
+        FROM ${"`" + this.datasetId + ".autonomous_decisions`"}
         WHERE timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL ${days} DAY)
         GROUP BY date
         ORDER BY date DESC
@@ -153,7 +153,7 @@ class BigQueryClient {
           AVG(tokens_used) as avg_tokens,
           AVG(processing_time_ms) as avg_processing_time,
           MODE(emotion) as most_common_emotion
-        FROM `${this.datasetId}.chat_logs`
+        FROM ${"`" + this.datasetId + ".chat_logs`"}
         WHERE timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL ${days} DAY)
         GROUP BY date
         ORDER BY date DESC
@@ -181,7 +181,7 @@ class BigQueryClient {
           AVG(creative_drive) as avg_creative_drive,
           AVG(analytical_depth) as avg_analytical_depth,
           MODE(dominant_trait) as most_common_trait
-        FROM `${this.datasetId}.psyche_state`
+        FROM ${"`" + this.datasetId + ".psyche_state`"}
         WHERE timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL ${days} DAY)
         GROUP BY date
         ORDER BY date DESC
@@ -228,6 +228,10 @@ class BigQueryClient {
    * Crear el dataset y tablas si no existen
    */
   async initialize() {
+    if (this.useLocal) {
+      await this.local.initialize();
+      return;
+    }
     try {
       // Verificar si el dataset existe
       const [datasets] = await this.bigquery.getDatasets();

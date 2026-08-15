@@ -121,6 +121,14 @@ brainWss.on('connection', (ws) => {
   });
 });
 
+// Servir el overlay 3D como archivos estáticos (gratis, sin Vercel).
+// El overlay queda en http://localhost:PORT/overlay/universe.html
+const overlayDir = path.resolve(__dirname, '../../public/overlay');
+app.use('/overlay', express.static(overlayDir));
+app.get('/', (_req, res) => {
+  res.redirect('/overlay/universe.html');
+});
+
 // Iniciar servidor
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 HECTRON API Server: http://0.0.0.0:${PORT}`);
