@@ -129,8 +129,10 @@ const overlayDir = path.resolve(__dirname, '../../public/overlay');
 app.use('/overlay', express.static(overlayDir));
 const studioDir = path.resolve(__dirname, '../../public/studio');
 const landingDir = path.resolve(__dirname, '../../public/landing');
+const docsDir = path.resolve(__dirname, '../../public/docs');
 app.use('/studio', express.static(studioDir));
 app.use('/landing', express.static(landingDir));
+app.use('/docs', express.static(docsDir));
 app.get('/', (_req, res) => {
   res.redirect('/landing/index.html');
 });
