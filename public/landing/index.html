@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HECTRON Studio — Streamers con IA para TikTok Live sin programar</title>
+    <meta name="description" content="Crea tu streamer con inteligencia artificial para TikTok Live en 5 minutos. IA que habla, recuerda usuarios, reacciona a regalos y cambia de escena sola. Sin programar.">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+        :root {
+            --bg: #050510; --bg2: #0a0a1e; --card: rgba(20,20,40,0.6);
+            --green: #00ff88; --cyan: #00ddff; --purple: #6a0dad; --pink: #ff69b4;
+            --text: #ffffff; --muted: #8899aa; --border: rgba(255,255,255,0.08);
+        }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+        /* ─── Background ─── */
+        .stars { position: fixed; inset: 0; z-index: -2;
+            background: radial-gradient(ellipse at top, var(--bg2), var(--bg)); }
+        .stars::before { content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 15% 25%, rgba(106,13,173,0.12), transparent 40%),
+                        radial-gradient(circle at 85% 60%, rgba(0,255,136,0.08), transparent 40%),
+                        radial-gradient(circle at 50% 90%, rgba(0,221,255,0.06), transparent 40%);
+            animation: glow 10s ease infinite; }
+        @keyframes glow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+        .star-field { position: fixed; inset: 0; z-index: -1; opacity: 0.4;
+            background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+                              radial-gradient(1px 1px at 60% 70%, #fff, transparent),
+                              radial-gradient(1px 1px at 80% 20%, #fff, transparent),
+                              radial-gradient(2px 2px at 40% 80%, rgba(0,255,136,0.5), transparent),
+                              radial-gradient(1px 1px at 90% 50%, #fff, transparent);
+            background-size: 200px 200px; }
+
+        /* ─── Nav ─── */
+        nav { display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 5%; position: sticky; top: 0; z-index: 100;
+            background: rgba(5,5,16,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+        .logo span { background: linear-gradient(135deg, var(--green), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--green); }
+        .btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, var(--green), var(--cyan)); color: #000; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,255,136,0.35); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { border-color: var(--green); }
+        .btn-lg { padding: 14px 32px; font-size: 16px; }
+
+        /* ─── Hero ─── */
+        .hero { text-align: center; padding: 80px 5% 60px; max-width: 900px; margin: 0 auto; }
+        .badge { display: inline-block; padding: 6px 16px; border-radius: 20px; background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.2); color: var(--green); font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+        .hero h1 { font-size: clamp(32px, 6vw, 56px); font-weight: 800; line-height: 1.1; margin-bottom: 20px; }
+        .hero h1 .grad { background: linear-gradient(135deg, var(--green), var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: clamp(16px, 2.5vw, 20px); color: var(--muted); margin-bottom: 36px; }
+        .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .hero-stats { display: flex; gap: 40px; justify-content: center; margin-top: 60px; flex-wrap: wrap; }
+        .stat { text-align: center; }
+        .stat .num { font-size: 32px; font-weight: 800; background: linear-gradient(135deg, var(--green), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat .label { font-size: 13px; color: var(--muted); }
+
+        /* ─── Sections ─── */
+        section { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; margin-bottom: 50px; }
+        .section-title h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-bottom: 12px; }
+        .section-title p { color: var(--muted); font-size: 16px; }
+
+        /* ─── Features grid ─── */
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.3s; }
+        .feature-card:hover { transform: translateY(-4px); border-color: rgba(0,255,136,0.2); box-shadow: 0 8px 32px rgba(0,255,136,0.08); }
+        .feature-icon { font-size: 36px; margin-bottom: 16px; }
+        .feature-card h3 { font-size: 18px; margin-bottom: 8px; }
+        .feature-card p { color: var(--muted); font-size: 14px; }
+
+        /* ─── How it works ─── */
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+        .step { text-align: center; position: relative; }
+        .step-num { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--cyan));
+            display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #000; margin: 0 auto 16px; }
+        .step h3 { font-size: 16px; margin-bottom: 6px; }
+        .step p { color: var(--muted); font-size: 14px; }
+
+        /* ─── Pricing ─── */
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
+        .price-card { background: var(--card); border: 2px solid var(--border); border-radius: 20px; padding: 36px; text-align: center; transition: all 0.3s; position: relative; }
+        .price-card:hover { transform: translateY(-4px); }
+        .price-card.popular { border-color: var(--purple); }
+        .price-card.popular::before { content: 'MÁS POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: var(--purple); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 16px; border-radius: 12px; }
+        .price-card .plan-name { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .price-card .price { font-size: 48px; font-weight: 800; margin: 12px 0; }
+        .price-card .price small { font-size: 16px; color: var(--muted); font-weight: 400; }
+        .price-card ul { list-style: none; text-align: left; margin: 24px 0; }
+        .price-card ul li { padding: 8px 0; color: var(--muted); font-size: 14px; }
+        .price-card ul li::before { content: '✓ '; color: var(--green); font-weight: bold; }
+        .price-card .btn { width: 100%; margin-top: 8px; }
+
+        /* ─── Testimonials ─── */
+        .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .testimonial { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
+        .testimonial .stars { color: #ffd700; margin-bottom: 12px; font-size: 16px; position: static; background: none; z-index: auto; }
+        .testimonial p { color: var(--text); font-size: 14px; font-style: italic; margin-bottom: 16px; }
+        .testimonial .author { display: flex; align-items: center; gap: 12px; }
+        .testimonial .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--green), var(--cyan)); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; }
+        .testimonial .name { font-size: 14px; font-weight: 600; }
+        .testimonial .role { font-size: 12px; color: var(--muted); }
+
+        /* ─── CTA banner ─── */
+        .cta-banner { text-align: center; padding: 60px 5%; background: linear-gradient(135deg, rgba(0,255,136,0.05), rgba(0,221,255,0.05));
+            border-radius: 24px; margin: 40px 5%; max-width: 1000px; }
+        .cta-banner h2 { font-size: 32px; margin-bottom: 16px; }
+        .cta-banner p { color: var(--muted); margin-bottom: 28px; }
+
+        /* ─── Footer ─── */
+        footer { padding: 40px 5%; text-align: center; border-top: 1px solid var(--border); margin-top: 60px; }
+        footer p { color: var(--muted); font-size: 13px; }
+        footer .links { display: flex; gap: 20px; justify-content: center; margin-bottom: 16px; }
+        footer .links a { color: var(--muted); text-decoration: none; font-size: 13px; }
+        footer .links a:hover { color: var(--green); }
+
+        @media (max-width: 600px) {
+            .nav-links { display: none; }
+            .hero-stats { gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="star-field"></div>
+
+    <!-- Nav -->
+    <nav>
+        <div class="logo">🦑 HECTRON <span>Studio</span></div>
+        <div class="nav-links">
+            <a href="#features">Funciones</a>
+            <a href="#how">Cómo funciona</a>
+            <a href="#pricing">Precios</a>
+            <a href="#testimonials">Opiniones</a>
+            <a href="/studio/index.html">Entrar al Studio</a>
+        </div>
+        <a href="/studio/index.html" class="btn btn-primary">Empezar gratis</a>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="badge">🚀 La primera plataforma de streamers con IA para TikTok</div>
+        <h1>Crea tu <span class="grad">Streamer con IA</span><br>sin escribir una línea de código</h1>
+        <p>Configura un presentador, tarotista o VTuber con inteligencia artificial que habla, recuerda a tus espectadores, reacciona a regalos y cambia de escena solo. En 5 minutos. Para TikTok Live.</p>
+        <div class="hero-cta">
+            <a href="/studio/index.html" class="btn btn-primary btn-lg">🚀 Crear mi streamer gratis</a>
+            <a href="#how" class="btn btn-outline btn-lg">Ver cómo funciona</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat"><div class="num">5 min</div><div class="label">Configuración</div></div>
+            <div class="stat"><div class="num">$0</div><div class="label">Para empezar</div></div>
+            <div class="stat"><div class="num">24/7</div><div class="label">Transmite solo</div></div>
+            <div class="stat"><div class="num">∞</div><div class="label">Personalidades</div></div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <section id="features">
+        <div class="section-title">
+            <h2>Todo lo que necesitas en un solo lugar</h2>
+            <p>Nadie más integra todo esto. Nosotros sí.</p>
+        </div>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>IA que piensa y responde</h3>
+                <p>Cerebro con Google Gemini (gratis). Responde al chat en tiempo real con personalidad propia.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎙️</div>
+                <h3>Voz realista</h3>
+                <p>Síntesis de voz con ElevenLabs. Tu IA habla en español con naturalidad y expresividad.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎭</div>
+                <h3>Avatar 3D con expresiones</h3>
+                <p>Modelo 3D que sonríe, se enoja o se entristece según la conversación. Vía OSC a VSeeFace.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3>Memoria de usuarios</h3>
+                <p>Recuerda quién volvió. Saluda por nombre y referencia conversaciones anteriores.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3>Reacciones a regalos</h3>
+                <p>Cada regalo de TikTok dispara efectos visuales únicos: galaxias, pétalos, rugidos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Mini-juegos en vivo</h3>
+                <p>Trivia, ruleta cósmica, dados del destino y duelos. Tu audiencia interactúa.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👁️</div>
+                <h3>Visión con IA</h3>
+                <p>El Leviatán analiza su propia pantalla con Gemini Vision y comenta lo que ve.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Cambio automático de escenas</h3>
+                <p>PRISM Live Studio cambia de escena según la emoción del Leviatán. Sin tocar nada.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h3>Conocimiento real</h3>
+                <p>Responde preguntas reales sobre ciencia, historia, cultura y el mundo actual.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how">
+        <div class="section-title">
+            <h2>De cero a streamer en 5 minutos</h2>
+            <p>Sin programar. Sin configuraciones técnicas.</p>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Entra al Studio</h3>
+                <p>Abre el dashboard web y elige tu personalidad entre 6 presets.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Pega 2 claves gratis</h3>
+                <p>Google Gemini y ElevenLabs. Te damos los links, son gratis.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Descarga tu .env</h3>
+                <p>El Studio genera el archivo de configuración automáticamente.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <h3>Un comando</h3>
+                <p><code>python -m leviatan.main</code> y tu streamer cobra vida.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">5</div>
+                <h3>Transmite</h3>
+                <p>Añade el overlay a PRISM Live Studio y empieza en TikTok Live.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing">
+        <div class="section-title">
+            <h2>El plan se paga solo con TikTok</h2>
+            <p>Empieza gratis. Cuando TikTok te pague, la suscripción se cubre sola.</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="plan-name">Gratis</div>
+                <div class="price">$0<small>/semana</small></div>
+                <ul>
+                    <li>IA con Google Gemini</li>
+                    <li>Chat de TikTok en tiempo real</li>
+                    <li>Overlay 3D básico</li>
+                    <li>1 stream a la vez</li>
+                    <li>Personalidad configurable</li>
+                </ul>
+                <a href="/studio/index.html" class="btn btn-outline">Empezar gratis</a>
+            </div>
+            <div class="price-card popular">
+                <div class="plan-name" style="color: var(--green)">Pro</div>
+                <div class="price">$9<small>/semana</small></div>
+                <ul>
+                    <li>Todo lo de Gratis</li>
+                    <li>Voz ElevenLabs premium</li>
+                    <li>Avatar 3D + expresiones</li>
+                    <li>Mini-juegos en overlay</li>
+                    <li>Efectos de donación</li>
+                    <li>Memoria de usuarios VIP</li>
+                </ul>
+                <a href="/studio/index.html" class="btn btn-primary">Elegir Pro</a>
+            </div>
+            <div class="price-card">
+                <div class="plan-name" style="color: var(--purple)">Emprende</div>
+                <div class="price">$29<small>/mes</small></div>
+                <ul>
+                    <li>Todo lo de Pro</li>
+                    <li>Multi-stream (3 cuentas)</li>
+                    <li>Visión con Gemini</li>
+                    <li>Automatización PRISM</li>
+                    <li>Soporte prioritario</li>
+                </ul>
+                <a href="/studio/index.html" class="btn btn-outline">Elegir Emprende</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROI banner -->
+    <div class="cta-banner">
+        <h2>📊 Con 500 espectadores ganas ~$150/mes</h2>
+        <p>El plan Pro cuesta $36/mes. Neto: <strong style="color: var(--green)">+$114/mes</strong> para ti.<br>TikTok te paga en regalos. La suscripción se paga sola. Nunca pierdes.</p>
+        <a href="/studio/index.html" class="btn btn-primary btn-lg">🚀 Empezar ahora</a>
+    </div>
+
+    <!-- Testimonials -->
+    <section id="testimonials">
+        <div class="section-title">
+            <h2>Lo que dicen los primeros usuarios</h2>
+        </div>
+        <div class="testimonials">
+            <div class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>"Configuré mi tarotista de IA en 5 minutos. La primera semana hice $47 en regalos de TikTok. El plan se pagó solo."</p>
+                <div class="author">
+                    <div class="avatar">M</div>
+                    <div><div class="name">María G.</div><div class="role">Creadora de contenido · @maria_vidente</div></div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>"No sé programar nada. Con el asistente del Studio lo tuve listo sin tocar código. El avatar 3D reacciona solo, es alucinante."</p>
+                <div class="author">
+                    <div class="avatar">C</div>
+                    <div><div class="name">Carlos R.</div><div class="role">Streamers IRL · @carlitos_live</div></div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>"El Leviatán recordó que un usuario había vuelto del día anterior. La gente se volvió loca pensando que estaba vivo. +300 followers en un directo."</p>
+                <div class="author">
+                    <div class="avatar">L</div>
+                    <div><div class="name">Laura M.</div><div class="role">VTuber · @laura_vt</div></div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="stars">★★★★★</div>
+                <p>"Los mini-juegos en el overlay son la clave. La trivia mantiene a la gente pegada al directo. Engagement subió un 80%."</p>
+                <div class="author">
+                    <div class="avatar">D</div>
+                    <div><div class="name">Diego P.</div><div class="role">Gamer streamer · @diego_gaming</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <div class="cta-banner">
+        <h2>🦑 Tu streamer de IA te espera</h2>
+        <p>Gratis para empezar. Sin tarjeta de crédito. En 5 minutos estás en vivo.</p>
+        <a href="/studio/index.html" class="btn btn-primary btn-lg">🚀 Crear mi streamer ahora</a>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="links">
+            <a href="/studio/index.html">Studio</a>
+            <a href="/overlay/universe.html">Overlay 3D</a>
+            <a href="#features">Funciones</a>
+            <a href="#pricing">Precios</a>
+            <a href="https://github.com/Hectron-lands/HectronAutonomo" target="_blank">GitHub</a>
+        </div>
+        <p>© 2025 HECTRON Studio · Hecho con 🦑 por creadores, para creadores</p>
+    </footer>
+</body>
+</html>
