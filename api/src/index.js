@@ -95,7 +95,7 @@ brainWss.on('connection', (ws) => {
         case 'scene-change':
           // Cambiar escena
           console.log('🎭 Cambio de escena:', message.scene);
-          // Enviar a OBS
+          // Enviar a PRISM Live Studio
           break;
         case 'autonomous-action':
           // Acción autónoma desde el cerebro
@@ -119,6 +119,14 @@ brainWss.on('connection', (ws) => {
   ws.on('close', () => {
     console.log('🔴 Cliente del cerebro desconectado');
   });
+});
+
+// Servir el overlay 3D como archivos estáticos (gratis, sin Vercel).
+// El overlay queda en http://localhost:PORT/overlay/universe.html
+const overlayDir = path.resolve(__dirname, '../../public/overlay');
+app.use('/overlay', express.static(overlayDir));
+app.get('/', (_req, res) => {
+  res.redirect('/overlay/universe.html');
 });
 
 // Iniciar servidor

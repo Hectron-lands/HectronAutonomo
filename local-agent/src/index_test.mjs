@@ -1,17 +1,15 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import OBSWebSocket from "obs-websocket-js";
 import { WebSocketServer } from "ws";
+import { connect as prismConnect, call as prismCall } from "./prism-controller.mjs";
 
 const app = express();
-const obs = new OBSWebSocket();
+// PRISM Live Studio (Games & IRL) se controla automatizando su app de escritorio Qt.
+const PRISM_WINDOW_TITLE = process.env.PRISM_WINDOW_TITLE || "PRISM Live Studio";
 
 const PORT = Number(process.env.PORT || 8787);
 const TOKEN = process.env.AGENT_TOKEN || "";
-const OBS_HOST = process.env.OBS_HOST || "127.0.0.1";
-const OBS_PORT = Number(process.env.OBS_PORT || 4455);
-const OBS_PASSWORD = process.env.OBS_PASSWORD || "";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
 
 let connected = false;

@@ -10,18 +10,21 @@
   "scripts": {
     "install": "npm install && npm run install:agent",
     "install:agent": "cd local-agent && npm install",
-    "dev": "concurrently "npm run dev:api" "npm run dev:agent"",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:agent\"",
     "dev:api": "cd api && npm run dev",
     "dev:agent": "cd local-agent && npm run dev",
     "build": "npm run build:api && npm run build:agent",
     "build:api": "cd api && npm run build",
     "build:agent": "cd local-agent && npm run build",
-    "start": "concurrently "npm run start:api" "npm run start:agent"",
     "start:api": "cd api && npm run start",
     "start:agent": "cd local-agent && npm run start",
     "start:prod": "NODE_ENV=production npm run start",
     "pc": "node scripts/start-pc.mjs",
-    "test": "echo "No tests yet""
+    "test": "echo \"No tests yet\"",
+    "start": "node scripts/start.mjs all",
+    "start:overlay": "node scripts/start.mjs api",
+    "start:agent": "node scripts/start.mjs agent",
+    "setup": "node scripts/start.mjs api"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
@@ -34,7 +37,7 @@
     "hectron",
     "streaming",
     "tiktok",
-    "obs",
+    "prism-live-studio",
     "autonomous",
     "ai",
     "3d",

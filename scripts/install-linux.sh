@@ -6,7 +6,7 @@ mkdir -p "$HOME/.config/systemd/user"
 
 cat > "$HOME/.config/systemd/user/hectron-agent.service" <<EOF
 [Unit]
-Description=HECTRON Local OBS Agent
+Description=HECTRON Local PRISM Live Studio Agent
 After=network-online.target
 
 [Service]
