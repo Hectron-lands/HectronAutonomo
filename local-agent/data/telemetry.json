@@ -1,0 +1,161 @@
+{
+  "chatLogs": [
+    {
+      "id": "ddd7e821-8d8f-4d8e-a4b5-c13f42503b1e",
+      "timestamp": "2026-08-16T00:11:34.750Z",
+      "user_id": "test_user",
+      "user_name": "Test",
+      "message": "Hola mundo",
+      "emotion": "neutral",
+      "scene": "DEFAULT",
+      "response": "Respuesta de test",
+      "response_emotion": "neutral",
+      "tokens_used": 0,
+      "processing_time_ms": 42
+    },
+    {
+      "id": "2fe14598-9b9d-4b50-91d8-960ce8506fd0",
+      "timestamp": "2026-08-16T00:12:22.487Z",
+      "user_id": "test_user",
+      "user_name": "Test",
+      "message": "Hola mundo",
+      "emotion": "neutral",
+      "scene": "DEFAULT",
+      "response": "Respuesta de test",
+      "response_emotion": "neutral",
+      "tokens_used": 0,
+      "processing_time_ms": 42
+    },
+    {
+      "id": "b7ef0696-fd41-427f-999c-cdb383307c9a",
+      "timestamp": "2026-08-16T00:13:02.645Z",
+      "user_id": "test_user",
+      "user_name": "Test",
+      "message": "Hola mundo",
+      "emotion": "neutral",
+      "scene": "DEFAULT",
+      "response": "Respuesta de test",
+      "response_emotion": "neutral",
+      "tokens_used": 0,
+      "processing_time_ms": 42
+    },
+    {
+      "id": "0b3651dd-a6ef-4ad6-85d3-62da1e0d4e47",
+      "timestamp": "2026-08-16T00:13:41.237Z",
+      "user_id": "test_user",
+      "user_name": "Test",
+      "message": "Hola mundo",
+      "emotion": "neutral",
+      "scene": "DEFAULT",
+      "response": "Respuesta de test",
+      "response_emotion": "neutral",
+      "tokens_used": 0,
+      "processing_time_ms": 42
+    }
+  ],
+  "psycheStates": [
+    {
+      "timestamp": "2026-08-16T00:11:34.751Z",
+      "machiavellianism": 5,
+      "stoicism": 7,
+      "sessionId": "test-session"
+    },
+    {
+      "timestamp": "2026-08-16T00:12:22.488Z",
+      "machiavellianism": 5,
+      "stoicism": 7,
+      "sessionId": "test-session"
+    },
+    {
+      "timestamp": "2026-08-16T00:13:02.646Z",
+      "machiavellianism": 5,
+      "stoicism": 7,
+      "sessionId": "test-session"
+    },
+    {
+      "timestamp": "2026-08-16T00:13:41.238Z",
+      "machiavellianism": 5,
+      "stoicism": 7,
+      "sessionId": "test-session"
+    }
+  ],
+  "autonomousDecisions": [
+    {
+      "timestamp": "2026-08-16T00:11:34.752Z",
+      "type": "scene-change",
+      "value": "HAPPY_SCENE",
+      "success": true,
+      "confidence": 0.9
+    },
+    {
+      "timestamp": "2026-08-16T00:11:34.753Z",
+      "type": "test",
+      "success": true,
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-08-16T00:11:34.753Z",
+      "type": "test",
+      "success": false,
+      "confidence": 0
+    },
+    {
+      "timestamp": "2026-08-16T00:12:22.488Z",
+      "type": "scene-change",
+      "value": "HAPPY_SCENE",
+      "success": true,
+      "confidence": 0.9
+    },
+    {
+      "timestamp": "2026-08-16T00:12:22.489Z",
+      "type": "test",
+      "success": true,
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-08-16T00:12:22.489Z",
+      "type": "test",
+      "success": false,
+      "confidence": 0
+    },
+    {
+      "timestamp": "2026-08-16T00:13:02.646Z",
+      "type": "scene-change",
+      "value": "HAPPY_SCENE",
+      "success": true,
+      "confidence": 0.9
+    },
+    {
+      "timestamp": "2026-08-16T00:13:02.647Z",
+      "type": "test",
+      "success": true,
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-08-16T00:13:02.647Z",
+      "type": "test",
+      "success": false,
+      "confidence": 0
+    },
+    {
+      "timestamp": "2026-08-16T00:13:41.238Z",
+      "type": "scene-change",
+      "value": "HAPPY_SCENE",
+      "success": true,
+      "confidence": 0.9
+    },
+    {
+      "timestamp": "2026-08-16T00:13:41.239Z",
+      "type": "test",
+      "success": true,
+      "confidence": 1
+    },
+    {
+      "timestamp": "2026-08-16T00:13:41.239Z",
+      "type": "test",
+      "success": false,
+      "confidence": 0
+    }
+  ],
+  "userMetrics": []
+}
