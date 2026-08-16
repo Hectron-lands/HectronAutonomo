@@ -17,14 +17,15 @@
     "build:api": "cd api && npm run build",
     "build:agent": "cd local-agent && npm run build",
     "start:api": "cd api && npm run start",
-    "start:agent": "cd local-agent && npm run start",
+    "start:agent": "node scripts/start.mjs agent",
     "start:prod": "NODE_ENV=production npm run start",
     "pc": "node scripts/start-pc.mjs",
-    "test": "echo \"No tests yet\"",
+    "test": "node tests/run-tests.mjs",
     "start": "node scripts/start.mjs all",
     "start:overlay": "node scripts/start.mjs api",
-    "start:agent": "node scripts/start.mjs agent",
-    "setup": "node scripts/start.mjs api"
+    "setup": "node scripts/start.mjs api",
+    "test:node": "node tests/run-tests.mjs --node",
+    "test:python": "node tests/run-tests.mjs --python"
   },
   "dependencies": {
     "concurrently": "^8.2.2"

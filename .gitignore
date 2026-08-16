@@ -61,3 +61,4 @@ vercel.json
 # package-lock.json
 # api/package-lock.json
 # local-agent/package-lock.json__pycache__/
+local-agent/data/

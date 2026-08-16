@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HECTRON Studio — API para desarrolladores</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #0a0a1e; color: #fff; display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #050510; border-right: 1px solid #1a1a3e; padding: 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+        .sidebar h2 { font-size: 16px; color: #00ff88; margin-bottom: 16px; }
+        .sidebar a { display: block; color: #8899aa; text-decoration: none; font-size: 13px; padding: 6px 0; border-left: 2px solid transparent; padding-left: 12px; transition: all 0.2s; }
+        .sidebar a:hover { color: #00ff88; border-color: #00ff88; }
+        .sidebar a.active { color: #00ff88; border-color: #00ff88; }
+        .content { flex: 1; padding: 40px; max-width: 900px; }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        h2 { font-size: 20px; margin: 32px 0 12px; color: #00ff88; border-bottom: 1px solid #1a1a3e; padding-bottom: 8px; }
+        h3 { font-size: 16px; margin: 20px 0 8px; }
+        p { color: #aabbcc; font-size: 14px; margin-bottom: 12px; line-height: 1.6; }
+        code { background: #111; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #00ddff; }
+        pre { background: #0d0d20; border: 1px solid #1a1a3e; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; }
+        pre code { background: none; padding: 0; color: #00ff88; font-size: 13px; }
+        .method { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 8px; }
+        .get { background: rgba(0,255,136,0.15); color: #00ff88; }
+        .post { background: rgba(0,221,255,0.15); color: #00ddff; }
+        .ws { background: rgba(106,13,173,0.15); color: #bb77ff; }
+        .endpoint { font-family: monospace; font-size: 14px; color: #fff; }
+        .param-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        .param-table th, .param-table td { border: 1px solid #1a1a3e; padding: 8px 12px; text-align: left; font-size: 13px; }
+        .param-table th { background: #111; color: #00ff88; }
+        .param-table td { color: #aabbcc; }
+        .try-it { background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 8px; padding: 16px; margin: 16px 0; }
+        .try-it button { background: linear-gradient(135deg, #00ff88, #00ddff); color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .try-it .response { margin-top: 12px; background: #0d0d20; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; color: #00ff88; white-space: pre-wrap; min-height: 40px; }
+        .nav-top { display: flex; gap: 16px; margin-bottom: 24px; }
+        .nav-top a { color: #8899aa; text-decoration: none; font-size: 14px; }
+        .nav-top a:hover { color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🦑 HECTRON API</h2>
+        <a href="#intro" class="active">Introducción</a>
+        <a href="#auth">Autenticación</a>
+        <a href="#health">GET /health</a>
+        <a href="#status">GET /status</a>
+        <a href="#scenes">GET /scenes</a>
+        <a href="#scene">POST /scene</a>
+        <a href="#live-start">POST /live/start</a>
+        <a href="#live-stop">POST /live/stop</a>
+        <a href="#studio-planes">GET /api/studio/planes</a>
+        <a href="#studio-config">POST /api/studio/config</a>
+        <a href="#studio-launch">POST /api/studio/launch</a>
+        <a href="#studio-roi">GET /api/studio/roi</a>
+        <a href="#brain-ws">WS /api/brain/ws</a>
+        <a href="#python">SDK Python</a>
+    </div>
+
+    <div class="content">
+        <div class="nav-top">
+            <a href="/">← Landing</a>
+            <a href="/studio/index.html">Studio</a>
+            <a href="/overlay/universe.html">Overlay</a>
+        </div>
+
+        <h1>API para desarrolladores</h1>
+        <p>API REST y WebSocket de HECTRON Studio. Base URL: <code>http://localhost:3000</code></p>
+
+        <h2 id="intro">Introducción</h2>
+        <p>La API controla el agente local de PRISM Live Studio, gestiona el SaaS (planes, configuración) y proporciona comunicación en tiempo real vía WebSocket para el overlay y el cerebro del Leviatán.</p>
+
+        <h2 id="auth">Autenticación</h2>
+        <p>Las rutas protegidas requieren el header <code>X-Agent-Token</code> con el valor configurado en <code>AGENT_TOKEN</code> del archivo <code>.env</code>. Si <code>AGENT_TOKEN</code> está vacío, la autenticación se desactiva (modo desarrollo).</p>
+        <pre><code># .env
+AGENT_TOKEN=mi_token_secreto
+
+# Request
+curl -H "X-Agent-Token: mi_token_secreto" http://localhost:3000/status</code></pre>
+
+        <h2 id="health"><span class="method get">GET</span> <span class="endpoint">/health</span></h2>
+        <p>Comprueba que el agente local está activo y si PRISM Live Studio está conectado.</p>
+        <div class="try-it">
+            <button onclick="tryFetch('/health')">Probar</button>
+            <div class="response" id="resp-health">Click "Probar" para ver la respuesta...</div>
+        </div>
+        <pre><code>GET /health
+
+Respuesta:
+{
+  "ok": true,
+  "service": "hectron-local-agent",
+  "prismConnected": true,
+  "obsConnected": true
+}</code></pre>
+
+        <h2 id="status"><span class="method get">GET</span> <span class="endpoint">/status</span></h2>
+        <p>Devuelve el estado completo de PRISM Live Studio: si está transmitiendo, escena actual y versión.</p>
+        <table class="param-table">
+            <tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr>
+            <tr><td>Header: X-Agent-Token</td><td>string</td><td>Token de autenticación</td></tr>
+        </table>
+        <pre><code>GET /status
+Respuesta:
+{
+  "online": true,
+  "obs": true,
+  "streaming": true,
+  "scene": "HAPPY_SCENE",
+  "obsVersion": "PRISM Live Studio (desktop, Qt)",
+  "websocketVersion": "pywinauto-desktop-bridge"
+}</code></pre>
+
+        <h2 id="scenes"><span class="method get">GET</span> <span class="endpoint">/scenes</span></h2>
+        <p>Lista todas las escenas disponibles en PRISM Live Studio.</p>
+        <pre><code>GET /scenes
+Respuesta:
+{
+  "ok": true,
+  "scenes": ["DEFAULT", "HAPPY_SCENE", "SAD_SCENE", "ANGRY_SCENE"]
+}</code></pre>
+
+        <h2 id="scene"><span class="method post">POST</span> <span class="endpoint">/scene</span></h2>
+        <p>Cambia la escena actual de PRISM Live Studio. Usado por el Leviatán para reaccionar con la emoción.</p>
+        <table class="param-table">
+            <tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr>
+            <tr><td>body.scene</td><td>string</td><td>Nombre de la escena (requerido)</td></tr>
+        </table>
+        <pre><code>POST /scene
+Content-Type: application/json
+X-Agent-Token: mi_token
+
+{ "scene": "HAPPY_SCENE" }
+
+Respuesta:
+{ "ok": true, "scene": "HAPPY_SCENE" }</code></pre>
+
+        <h2 id="live-start"><span class="method post">POST</span> <span class="endpoint">/live/start</span></h2>
+        <p>Inicia la transmisión en PRISM Live Studio. Si <code>STREAM_SERVER</code> y <code>STREAM_KEY</code> están configurados, los aplica automáticamente.</p>
+        <pre><code>POST /live/start
+Respuesta:
+{ "ok": true }</code></pre>
+
+        <h2 id="live-stop"><span class="method post">POST</span> <span class="endpoint">/live/stop</span></h2>
+        <p>Detiene la transmisión en curso.</p>
+        <pre><code>POST /live/stop
+Respuesta:
+{ "ok": true }</code></pre>
+
+        <h2 id="studio-planes"><span class="method get">GET</span> <span class="endpoint">/api/studio/planes</span></h2>
+        <p>Lista los planes de suscripción disponibles del SaaS.</p>
+        <div class="try-it">
+            <button onclick="tryFetch('/api/studio/planes')">Probar</button>
+            <div class="response" id="resp-planes">Click "Probar"...</div>
+        </div>
+        <pre><code>GET /api/studio/planes
+Respuesta:
+{
+  "ok": true,
+  "planes": {
+    "free": { "nombre": "Gratis", "precio": 0, ... },
+    "pro": { "nombre": "Pro", "precio": 9, ... },
+    "enterprise": { "nombre": "Emprende", "precio": 29, ... }
+  }
+}</code></pre>
+
+        <h2 id="studio-config"><span class="method post">POST</span> <span class="endpoint">/api/studio/config</span></h2>
+        <p>Guarda la configuración del streamer creada desde el dashboard.</p>
+        <table class="param-table">
+            <tr><th>Parámetro</th><th>Tipo</th><th>Descripción</th></tr>
+            <tr><td>body.tiktok</td><td>string</td><td>Usuario de TikTok (requerido)</td></tr>
+            <tr><td>body.gemini</td><td>string</td><td>API key de Gemini (requerido)</td></tr>
+            <tr><td>body.personality</td><td>string</td><td>Personalidad del Leviatán</td></tr>
+            <tr><td>body.plan</td><td>string</td><td>free | pro | enterprise</td></tr>
+        </table>
+        <pre><code>POST /api/studio/config
+Content-Type: application/json
+
+{
+  "tiktok": "lopez_hector140998",
+  "gemini": "AIzaSy...",
+  "personality": "Eres el Leviatán...",
+  "plan": "pro"
+}
+
+Respuesta:
+{ "ok": true, "configId": "stream-1234", "plan": "Pro" }</code></pre>
+
+        <h2 id="studio-launch"><span class="method post">POST</span> <span class="endpoint">/api/studio/launch</span></h2>
+        <p>Genera las instrucciones de lanzamiento del streamer.</p>
+        <pre><code>POST /api/studio/launch
+Content-Type: application/json
+
+{ "tiktok": "lopez_hector140998", "gemini": "AIzaSy...", "plan": "pro" }
+
+Respuesta:
+{
+  "ok": true,
+  "instructions": [
+    "1. Descarga el archivo .env generado",
+    "2. Colócalo en la raíz del proyecto",
+    "3. Ejecuta: pip install -r leviatan/requirements.txt",
+    "4. Ejecuta: python -m leviatan.main --check",
+    "5. Ejecuta: python -m leviatan.main"
+  ],
+  "overlay": "http://localhost:3000/overlay/universe.html"
+}</code></pre>
+
+        <h2 id="studio-roi"><span class="method get">GET</span> <span class="endpoint">/api/studio/roi?viewers=500</span></h2>
+        <p>Calcula el ROI estimado según el número de espectadores.</p>
+        <div class="try-it">
+            <button onclick="tryFetch('/api/studio/roi?viewers=500')">Probar con 500 viewers</button>
+            <div class="response" id="resp-roi">Click "Probar"...</div>
+        </div>
+        <pre><code>GET /api/studio/roi?viewers=500
+Respuesta:
+{
+  "ok": true,
+  "estimacion": {
+    "viewers": 500,
+    "regalosDiarios": 5,
+    "ingresosMensuales": 150,
+    "nota": "Estimación basada en conversión promedio de TikTok Live"
+  }
+}</code></pre>
+
+        <h2 id="brain-ws"><span class="method ws">WS</span> <span class="endpoint">ws://localhost:3000/api/brain/ws</span></h2>
+        <p>WebSocket bidireccional para comunicación en tiempo real entre el cerebro, el overlay y el agente.</p>
+        <pre><code>// Conectar
+const ws = new WebSocket('ws://localhost:3000/api/brain/ws');
+
+// Autenticar
+ws.send(JSON.stringify({ type: 'auth', token: 'mi_token' }));
+
+// Cambiar escena
+ws.send(JSON.stringify({ type: 'scene-change', scene: 'HAPPY_SCENE' }));
+
+// Iniciar stream
+ws.send(JSON.stringify({ type: 'start-stream' }));
+
+// Detener stream
+ws.send(JSON.stringify({ type: 'stop-stream' }));
+
+// Acción autónoma
+ws.send(JSON.stringify({
+  type: 'autonomous-action',
+  action: { type: 'scene-change', value: 'SAD_SCENE', confidence: 0.8 }
+}));
+
+// Mensajes recibidos
+ws.onmessage = (e) => {
+  const msg = JSON.parse(e.data);
+  // scene-changed | stream-started | stream-stopped | error
+};</code></pre>
+
+        <h2 id="python">SDK Python (Leviatán)</h2>
+        <p>El Leviatán es un paquete Python que se usa como librería o standalone:</p>
+        <pre><code># Instalar dependencias
+pip install -r leviatan/requirements.txt
+
+# Usar como módulo
+from leviatan import cerebro, memoria, voz, cuerpo, conocimiento, vision
+
+# Generar respuesta con Gemini
+texto, emocion = cerebro.pensar_respuesta(
+    username="juan123",
+    mensaje="¿cuál es el sentido de la vida?",
+    es_conocido=False,
+    interacciones=1,
+    msj_anterior=""
+)
+
+# Recordar usuario
+memoria.recordar_usuario("juan123", "¿cuál es el sentido de la vida?")
+
+# Hablar
+voz.hablar(texto)
+
+# Cambiar expresión 3D
+cuerpo.cambiar_expresion(emocion)
+
+# Conocimiento real
+texto, emo = conocimiento.saber("agujeros negros")
+
+# Visión
+texto, emo = vision.analizar_pantalla("Observa el stream")
+
+# Arrancar todo
+# python -m leviatan.main</code></pre>
+    </div>
+
+    <script>
+        async function tryFetch(url) {
+            const id = 'resp-' + url.split('/').pop().split('?')[0].replace('/', '-');
+            const el = document.getElementById(id) || document.querySelector('.try-it .response');
+            if (!el) return;
+            el.textContent = 'Cargando...';
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                el.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                el.textContent = 'Error: ' + e.message + '\n(¿Está la API corriendo en localhost:3000?)';
+            }
+        }
+    </script>
+</body>
+</html>
