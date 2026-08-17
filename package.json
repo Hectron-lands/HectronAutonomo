@@ -8,7 +8,6 @@
     "local-agent"
   ],
   "scripts": {
-    "install": "npm install && npm run install:agent",
     "install:agent": "cd local-agent && npm install",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:agent\"",
     "dev:api": "cd api && npm run dev",
@@ -25,7 +24,8 @@
     "start:overlay": "node scripts/start.mjs api",
     "setup": "node scripts/start.mjs api",
     "test:node": "node tests/run-tests.mjs --node",
-    "test:python": "node tests/run-tests.mjs --python"
+    "test:python": "node tests/run-tests.mjs --python",
+    "setup:full": "npm install && npm run install:agent"
   },
   "dependencies": {
     "concurrently": "^8.2.2"
